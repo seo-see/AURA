@@ -1,0 +1,13 @@
+name: AURA
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.21
+  - pip
+  - pip:
+    - opencv-python==4.11.0.86
+    - opencv-contrib-python==4.11.0.86
+    - mediapipe==0.10.21
+    - numpy==1.26.4
+    - pandas==2.3.3 

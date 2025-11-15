@@ -1,0 +1,9 @@
+# This directory contains the AURA dataset
+# Download from: https://doi.org/10.5281/zenodo.17577177
+# 
+# Directory structure:
+# - annotations/expert_annotations.csv: Expert annotations for evaluation
+# - metadata/video_metadata.csv: Video metadata
+# - test/: Test set videos (test_01.mp4 ~ test_63.mp4)
+# - tuning/: Tuning set videos (tuning_01.mp4 ~ tuning_12.mp4)
+
