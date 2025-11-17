@@ -70,6 +70,19 @@ def process_video(input_path, show_video=False, enable_evaluation=False, ground_
         from src.evaluation import PerformanceEvaluator
         evaluator = PerformanceEvaluator(ground_truth_path=ground_truth_path)
     
+    # Variables to store previous frame values (for text persistence)
+    prev_lh_text = None
+    prev_rh_text = None
+    prev_mean_v = 0.0
+    prev_peak_v = 0.0
+    prev_cum_v = 0.0
+    prev_agitation_alarm = False
+    
+    # Variables for alarm message persistence (2 seconds)
+    alarm_hold_duration = 2.0  # seconds
+    last_collision_alarm_time = None  # None until first alarm is detected
+    last_agitation_alarm_time = None  # None until first alarm is detected
+    
     # Process frames
     while cap.isOpened():
         ret, frame = cap.read()
@@ -88,42 +101,60 @@ def process_video(input_path, show_video=False, enable_evaluation=False, ground_
         )
         
         # === Movement (agitation) analysis ===
-        mean_v = 0.0
-        peak_v = 0.0
-        cum_v = 0.0
-        current_agitation_alarm = False
+        mean_v = prev_mean_v
+        peak_v = prev_peak_v
+        cum_v = prev_cum_v
+        current_agitation_alarm = prev_agitation_alarm
         
         if results.pose_landmarks:
             mean_v, peak_v, cum_v, current_agitation_alarm = analyzer.update(results.pose_landmarks.landmark)
-            
-            # Display values (scores, velocity) thinly in top right corner
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.7
-            thickness = 2
-            color = (0, 255, 255)
-            w = annotated_frame.shape[1]
-            
-            # Display LH, RH scores (fixed position)
+            # Update previous values when keypoints are detected
+            prev_mean_v = mean_v
+            prev_peak_v = peak_v
+            prev_cum_v = cum_v
+            prev_agitation_alarm = current_agitation_alarm
+            # Update text values when available
             if lh_text:
-                cv2.putText(annotated_frame, lh_text, (w-400, 50), font, font_scale, color, thickness)
+                prev_lh_text = lh_text
             if rh_text:
-                cv2.putText(annotated_frame, rh_text, (w-400, 90), font, font_scale, color, thickness)
-            
-            # Display velocity information (fixed position)
-            velocity_text = analyzer.get_velocity_text(mean_v, peak_v, cum_v)
-            cv2.putText(annotated_frame, velocity_text, (w-400, 130), font, font_scale, color, thickness)
-            
-            # Collision detection message (fixed position)
-            if collision_manager.is_colliding:
-                collision_color = (255, 0, 0)
-                cv2.putText(annotated_frame, "COLLISION DETECTED!", (w-400, 170), font, 1.0, collision_color, 3)
-            
-            # Excessive behavior detection message (fixed position)
-            if current_agitation_alarm:
-                agitation_color = (255, 255, 0)
-                cv2.putText(annotated_frame, "AGITATION DETECTED!", (w-400, 210), font, 1.0, agitation_color, 3)
+                prev_rh_text = rh_text
+        
+        # Display values (scores, velocity) - always display, using previous values if keypoints not detected
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.7
+        thickness = 2
+        color = (0, 255, 255)
+        w = annotated_frame.shape[1]
+        
+        # Display LH, RH scores (fixed position) - use previous values if current is None
+        display_lh_text = lh_text if lh_text is not None else prev_lh_text
+        display_rh_text = rh_text if rh_text is not None else prev_rh_text
+        if display_lh_text:
+            cv2.putText(annotated_frame, display_lh_text, (w-400, 50), font, font_scale, color, thickness)
+        if display_rh_text:
+            cv2.putText(annotated_frame, display_rh_text, (w-400, 90), font, font_scale, color, thickness)
+        
+        # Display velocity information (fixed position) - always display
+        velocity_text = analyzer.get_velocity_text(mean_v, peak_v, cum_v)
+        cv2.putText(annotated_frame, velocity_text, (w-400, 130), font, font_scale, color, thickness)
         
         current_time = time.time() - video_start_time
+        
+        # Update alarm trigger times when alarms are detected
+        if collision_manager.is_colliding:
+            last_collision_alarm_time = current_time
+        if current_agitation_alarm:
+            last_agitation_alarm_time = current_time
+        
+        # Collision detection message (fixed position) - display for 2 seconds after last detection
+        if last_collision_alarm_time is not None and current_time - last_collision_alarm_time < alarm_hold_duration:
+            collision_color = (255, 0, 0)
+            cv2.putText(annotated_frame, "COLLISION DETECTED!", (w-400, 170), font, 1.0, collision_color, 3)
+        
+        # Excessive behavior detection message (fixed position) - display for 2 seconds after last detection
+        if last_agitation_alarm_time is not None and current_time - last_agitation_alarm_time < alarm_hold_duration:
+            agitation_color = (255, 255, 0)
+            cv2.putText(annotated_frame, "AGITATION DETECTED!", (w-400, 210), font, 1.0, agitation_color, 3)
         alarm_logger.log_frame(
             frame_number=collision_manager.frame_count,
             time_seconds=current_time,
