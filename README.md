@@ -44,20 +44,20 @@ The full dataset used for development and validation is available at [Zenodo](ht
 
 ```
 AURA/
-├── main.py                 # Main entry point
-├── environment.yml         # Conda environment file
-├── README.md              # Project documentation
-├── LICENSE                # Apache License 2.0
-├── .gitignore             # Git ignore rules
+├── main.py                
+├── environment.yml        
+├── README.md             
+├── LICENSE               
+├── .gitignore             
 ├── src/                   
 │   ├── __init__.py
-│   ├── collision.py       # Collision detection module
-│   ├── agitation.py       # Agitation detection module
-│   ├── video_utils.py     # Video processing utilities
-│   ├── alarm_logger.py    # Alarm logging module
-│   └── evaluation.py      # Performance evaluation module
+│   ├── collision.py       
+│   ├── agitation.py       
+│   ├── video_utils.py     
+│   ├── alarm_logger.py   
+│   └── evaluation.py      
 ├── assets/                # Input video files (sample videos)
-│   ├── sample1.mp4        # Sample video files
+│   ├── sample1.mp4        
 │   └── sample2.mp4
 ├── AURA_dataset/          # AURA dataset (download from Zenodo)
 │   ├── annotations/
@@ -117,5 +117,10 @@ If you have any questions, contact us at [junhyuk.sam@gmail.com](mailto:junhyuk.
 
 If you use AURA in your research, please cite:
 ```bibtex
-# Citation will be added after arXiv publication
+@article{seo2025aura,
+      title={AURA: Development and Validation of an Augmented Unplanned Removal Alert System using Synthetic ICU Videos},
+      author={Seo, Junhyuk and Moon, Hyeyoon and Jung, Kyu-Hwan and Oh, Namkee and Kim, Taerim},
+      journal={arXiv preprint arXiv:2511.12241},
+      year={2025}
+    }
 ```
