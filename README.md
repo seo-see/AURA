@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17577177.svg)](https://doi.org/10.5281/zenodo.17577177)
+[![arXiv](https://img.shields.io/badge/arXiv-2511.12241-b31b1b.svg)](https://doi.org/10.48550/arXiv.2511.12241)
 
 # AURA: Development and Validation of an Augmented Unplanned Removal Alert System using Synthetic ICU Videos
 
